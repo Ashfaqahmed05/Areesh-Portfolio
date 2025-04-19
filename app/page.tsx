@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -19,6 +21,9 @@ import {
   Github,
   Linkedin,
   Twitter,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
 } from "lucide-react"
 import Image from "next/image"
 import { useState } from "react"
@@ -27,6 +32,13 @@ import { AnimatedText } from "@/components/animated-text"
 
 export default function Home() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [formStatus, setFormStatus] = useState<"idle" | "submitting" | "success" | "error">("idle")
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    message: "",
+  })
 
   // Animation refs for each section
   const [aboutVisible, aboutRef] = useIntersectionObserver()
@@ -37,6 +49,50 @@ export default function Home() {
   const [referencesVisible, referencesRef] = useIntersectionObserver()
   const [contactVisible, contactRef] = useIntersectionObserver()
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setFormStatus("submitting")
+
+    try {
+      // Replace 'your-form-id' with the form ID you get from Formspree
+      const response = await fetch("https://formspree.io/f/xnnpedap", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (response.ok) {
+        setFormStatus("success")
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          message: "",
+        })
+        // Reset form status after 5 seconds
+        setTimeout(() => setFormStatus("idle"), 5000)
+      } else {
+        setFormStatus("error")
+        // Reset form status after 5 seconds
+        setTimeout(() => setFormStatus("idle"), 5000)
+      }
+    } catch (error) {
+      setFormStatus("error")
+      // Reset form status after 5 seconds
+      setTimeout(() => setFormStatus("idle"), 5000)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header/Navigation */}
@@ -44,7 +100,7 @@ export default function Home() {
         <div className="container flex h-16 items-center justify-between">
           <div className="font-heading font-bold text-xl gradient-text">Muhammad Areesh</div>
           <nav className="hidden md:flex gap-6">
-            <a href="#" className="text-sm font-medium hover:text-primary transition-colors duration-300">
+          <a href="#" className="text-sm font-medium hover:text-primary transition-colors duration-300">
               Home
             </a>
             <a href="#about" className="text-sm font-medium hover:text-primary transition-colors duration-300">
@@ -120,11 +176,12 @@ export default function Home() {
 
         {/* Mobile Menu */}
         <div
-          className={`md:hidden border-t overflow-hidden transition-all duration-300 ease-in-out ${mobileMenuOpen ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
-            }`}
+          className={`md:hidden border-t overflow-hidden transition-all duration-300 ease-in-out ${
+            mobileMenuOpen ? "max-h-[400px] opacity-100" : "max-h-0 opacity-0"
+          }`}
         >
           <div className="container py-4 flex flex-col space-y-4">
-            <a
+          <a
               href="#"
               className="text-sm font-medium hover:text-primary py-2 transition-transform duration-300 hover:translate-x-2"
               onClick={() => setMobileMenuOpen(false)}
@@ -222,7 +279,7 @@ export default function Home() {
                   <Github className="h-5 w-5" />
                   <span className="sr-only">GitHub</span>
                 </a>
-                <a target="_blank" href="https://www.linkedin.com/in/muhammad-areesh-a12b181bb/" className="text-gray-600 hover:text-primary transition-colors duration-300">
+                <a target="_blank" href="https://www.linkedin.com/in/muhammad-areesh-a12b181bb" className="text-gray-600 hover:text-primary transition-colors duration-300">
                   <Linkedin className="h-5 w-5" />
                   <span className="sr-only">LinkedIn</span>
                 </a>
@@ -235,7 +292,7 @@ export default function Home() {
             <div className="flex items-center justify-center animate-fade-in animate-delay-500">
               <div className="relative h-[300px] w-[300px] overflow-hidden rounded-full border-4 border-white shadow-xl animate-float bg-gradient-to-br from-primary/10 to-accent/10">
                 <Image
-                  src="/Areesh.jpg?height=300&width=300"
+                  src="/Areesh2.jpeg"
                   alt="Muhammad Areesh"
                   fill
                   className="object-cover"
@@ -345,6 +402,16 @@ export default function Home() {
             </div>
           </div>
           <div className="mx-auto grid max-w-5xl gap-6 py-12">
+          <div className="relative pl-8 timeline-line timeline-dot animate-fade-in">
+              <div className="space-y-2 p-4 rounded-lg bg-white shadow-sm">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-xl font-bold text-primary">Invigilation Comittee</h3>
+                  <Badge className="bg-gradient-to-r from-primary to-accent animate-pulse">Current</Badge>
+                </div>
+                <p className="text-sm text-gray-500">SOHAIL UNIVERSITY - Karachi, Pakistan</p>
+                <p className="text-sm text-gray-500">Aug 2024 - Present</p>
+              </div>
+            </div>
             <div className="relative pl-8 timeline-line timeline-dot animate-fade-in">
               <div className="space-y-2 p-4 rounded-lg bg-white shadow-sm">
                 <div className="flex items-center gap-2">
@@ -430,6 +497,24 @@ export default function Home() {
             </div>
           </div>
           <div className="mx-auto grid max-w-5xl gap-6 py-12 md:grid-cols-3">
+          <Card className="overflow-hidden card-hover animate-scale-in glass-card">
+              <div className="h-2 bg-gradient-to-r from-primary to-accent"></div>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <GraduationCap className="h-5 w-5 text-primary" />
+                  <h3 className="font-bold text-primary">MS-Software Engineering</h3>
+                </div>
+                <p className="text-sm text-gray-600 mb-2">SIR SYED University of Engineering And Technology</p>
+                <p className="text-sm text-gray-600 mb-2">Karachi, Pakistan</p>
+                <p className="text-sm text-gray-600 mb-4">Oct 2024</p>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="border-primary text-primary">
+                    Continue
+                  </Badge>
+
+                </div>
+              </CardContent>
+            </Card>
             <Card className="overflow-hidden card-hover animate-scale-in glass-card">
               <div className="h-2 bg-gradient-to-r from-primary to-accent"></div>
               <CardContent className="p-6">
@@ -922,7 +1007,7 @@ export default function Home() {
                 <div className="flex flex-col items-center text-center">
                   <div className="relative h-24 w-24 overflow-hidden rounded-full animate-float bg-gradient-to-br from-primary/10 to-accent/10">
                     <Image
-                      src="/Aqeel-ur-Rehman.jpg?height=100&width=100"
+                      src="/Aqeel-ur-Rehman.jpg"
                       alt="Prof. Dr. Aqeel ur Rehman"
                       fill
                       className="object-cover"
@@ -947,7 +1032,7 @@ export default function Home() {
               <CardContent className="p-6">
                 <div className="flex flex-col items-center text-center">
                   <div className="relative h-24 w-24 overflow-hidden rounded-full animate-float bg-gradient-to-br from-primary/10 to-accent/10">
-                    <Image src="/Dr Naseem.jpg?height=100&width=100" alt="Dr. Naseem" fill className="object-cover" />
+                    <Image src="/Dr Naseem.jpg" alt="Dr. Naseem" fill className="object-cover" />
                   </div>
                   <h3 className="mt-4 font-bold text-lg text-primary">Dr. Naseem</h3>
                   <p className="text-sm text-gray-600">Chairman</p>
@@ -1034,32 +1119,54 @@ export default function Home() {
               </div>
             </div>
             <div className="space-y-4 animate-slide-right">
-              <div className="grid gap-4 p-6 rounded-lg glass-card shadow-sm">
+              <form onSubmit={handleSubmit} className="grid gap-4 p-6 rounded-lg glass-card shadow-sm">
+                {formStatus === "success" && (
+                  <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-md flex items-center gap-2 mb-4">
+                    <CheckCircle className="h-5 w-5" />
+                    <p>Your message has been sent successfully! I'll get back to you soon.</p>
+                  </div>
+                )}
+
+                {formStatus === "error" && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-md flex items-center gap-2 mb-4">
+                    <AlertCircle className="h-5 w-5" />
+                    <p>There was an error sending your message. Please try again later.</p>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label
-                      htmlFor="first-name"
+                      htmlFor="firstName"
                       className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
                       First name
                     </label>
                     <Input
-                      id="first-name"
+                      id="firstName"
+                      name="firstName"
                       placeholder="Enter your first name"
                       className="transition-all duration-300 focus:scale-105 border-primary/20 focus:border-primary"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      required
                     />
                   </div>
                   <div className="space-y-2">
                     <label
-                      htmlFor="last-name"
+                      htmlFor="lastName"
                       className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
                       Last name
                     </label>
                     <Input
-                      id="last-name"
+                      id="lastName"
+                      name="lastName"
                       placeholder="Enter your last name"
                       className="transition-all duration-300 focus:scale-105 border-primary/20 focus:border-primary"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      required
                     />
                   </div>
                 </div>
@@ -1072,9 +1179,13 @@ export default function Home() {
                   </label>
                   <Input
                     id="email"
+                    name="email"
                     placeholder="Enter your email"
                     type="email"
                     className="transition-all duration-300 focus:scale-105 border-primary/20 focus:border-primary"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
                   />
                 </div>
                 <div className="space-y-2">
@@ -1086,14 +1197,29 @@ export default function Home() {
                   </label>
                   <textarea
                     id="message"
+                    name="message"
                     className="flex min-h-[120px] w-full rounded-md border border-primary/20 bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-300 focus:scale-105 focus:border-primary"
                     placeholder="Enter your message"
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    required
                   ></textarea>
                 </div>
-                <Button className="w-full hover:scale-105 transition-transform duration-300 bg-gradient-to-r from-primary to-accent shadow-md">
-                  Send Message
+                <Button
+                  type="submit"
+                  className="w-full hover:scale-105 transition-transform duration-300 bg-gradient-to-r from-primary to-accent shadow-md"
+                  disabled={formStatus === "submitting"}
+                >
+                  {formStatus === "submitting" ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    "Send Message"
+                  )}
                 </Button>
-              </div>
+              </form>
             </div>
           </div>
         </div>
@@ -1116,7 +1242,7 @@ export default function Home() {
                 rel="noopener noreferrer"
                 className="text-primary hover:text-accent transition-colors duration-300 font-medium"
               >
-                Ashfaq Ahmed
+               Ashfaq Ahmed
               </a>
             </p>
           </div>
